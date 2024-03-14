@@ -1,0 +1,278 @@
+//Dongho Kim owenk@iastate.edu
+//Jimmy Le jimmyle@iastate.edu
+
+main:
+    ADD X0, XZR, XZR
+    ADD X1, XZR, XZR
+
+    ADDI X1, XZR, #10
+
+    BL fill
+
+    BL cycle_sort
+
+    ADD X0, XZR, XZR
+    ADD X1, XZR, XZR
+    ADDI X2, XZR, #9
+    ADD X3, XZR, XZR
+    BL binary_search
+
+    ADD X0, XZR, XZR
+    ADD X1, XZR, XZR
+    ADDI X2, XZR, #9
+    ADDI X3, XZR, #9
+    BL binary_search
+
+    ADD X0, XZR, XZR
+    ADD X1, XZR, XZR
+    ADDI X2, XZR, #9
+    ADDI X3, XZR, #5
+    BL binary_search
+
+    ADD X0, XZR, XZR
+    ADD X1, XZR, XZR
+    ADDI X2, XZR, #9
+    ADDI X3, XZR, #10
+    BL binary_search
+
+    HALT
+
+
+complete_cycle:
+    ADD X9, XZR, XZR
+    ADD X10, XZR, XZR
+    ADD X11, XZR, XZR
+    ADD X12, XZR, XZR
+    ADD X13, XZR, XZR
+   
+    SUBI SP, SP, #48            //make space on stack
+    STUR X19, [SP, #0]          //save X19, index uses X19
+    STUR X20, [SP, #8]          //save X20, int a[] uses X20
+    STUR X21, [SP, #16]
+    STUR X22, [SP, #24]
+    STUR X23, [SP, #32]
+    STUR LR, [SP, #40]          //Store LR to come back
+    ADD X19, X3, XZR            //X19 = index
+    ADD X20, X0, XZR            //X20 = &a[]
+    ADD X21, X2, XZR             //X21 = start
+    ADD X22, X4, XZR            //X22 = value
+    ADD X23, X1, XZR            //X23 = n
+top_of_complete_cycle:
+    SUB X11, X19, X21            //X11 = index - start
+    CBZ X11, end_complete_cycle
+    ADD X3, X4, XZR
+    ADD X2, X21, XZR
+    ADD X0, X20, XZR
+    ADD X1, X23, XZR
+    BL find_index
+    ADDI X19, X0, #0            //X19 = updated index
+    ADDI X1, X19, #0            //X1 = updated index
+    ADDI X0, X20, #0
+    ADDI X2, X4, #0
+    BL skip_duplicates
+    ADDI X19, X0, #0            //X19 = returned index from skip_d
+    //swap by hand
+    LSL X12, X19, #3             //X12 = index * 8
+    ADD X12, X20, X12            //X12 = &a[index]
+    LDUR X13, [X12, #0]           //X13 temp = a[index]
+    STUR X4, [X12, #0]           //&a[index] = X4 value
+    ADD X4, X13, XZR              //X4 value = a[index]
+    B top_of_complete_cycle
+end_complete_cycle:
+    LDUR LR, [SP, #40]
+    LDUR X23, [SP, #32]
+    LDUR X22, [SP, #24]
+    LDUR X21, [SP, #16]
+    LDUR X20, [SP, #8]
+    LDUR X19, [SP, #0]
+    ADDI SP, SP, #48
+    BR LR
+
+fill:
+    ADD X9, XZR, XZR       
+    ADD X10, XZR, XZR     
+    ADD X11, XZR, XZR
+    ADD X12, XZR, XZR
+    ADD X13, XZR, XZR
+top_fill:
+    SUB X10, X1, X9     
+    CBZ X10, end_fill
+    SUB X11, X1, X9
+    SUBI X11, X11, #1
+    LSL X12, X9, #3
+    ADD X13, X0, X12
+    STUR X11, [X13, #0]
+    ADDI X9, X9, #1
+    B top_fill
+end_fill:
+    BR LR
+
+find_index:
+    ADD X9, XZR, XZR
+    ADD X10, XZR, XZR
+    ADD X11, XZR, XZR
+    ADD X12, XZR, XZR
+    ADD X13, XZR, XZR
+    ADD X10, X2, XZR                 //X10 = start    
+    ADD X9, X2, XZR                 //X9 = start + 1                    
+top_find_index:                   
+    ADDI X9, X9, #1                  //X9 = X9 + 1
+    SUBS X11, X1, X9                 //X11 = n - i
+    B.LE end_find_index              //while n is bigger than i
+    LSL X12, X9, #3                  //X12 = i * 8
+    ADD X12, X0, X12                 //X12 = &a[i]
+    LDUR X12, [X12, #0]              //X12 = a[i]
+    SUBS XZR, X3, X12                   
+    B.LE top_find_index    
+    ADDI X10, X10, #1
+    B top_find_index
+end_find_index:
+    ADD X0, X10, XZR                 //Return index
+    BR LR
+
+skip_duplicates:
+    ADD X9, XZR, XZR
+    ADD X10, XZR, XZR
+    ADD X11, XZR, XZR
+    ADD X9, X1, XZR                 //X9 = start
+top_of_skip_duplicates:
+    LSL X11, X9, #3                 //X11 = index * 8
+    ADD X11, X11, X0                //X11 = &a[index]
+    LDUR X11, [X11, #0]             //X11 = a[index]
+    SUB X10, X2, X11                //X10 = value - a[index]
+    CBNZ X10, end_skip_duplicates   //if value == a[index]
+    ADDI X9, X9, #1                 //index++
+    B top_of_skip_duplicates
+end_skip_duplicates:
+    ADD X0, X9, XZR                //return index
+    BR LR
+
+swap:
+    ADD X9, XZR, XZR
+    ADD X10, XZR, XZR
+
+    LDUR X9, [X0, #0]  
+    LDUR X10, [X1, #0]  
+    STUR X10, [X0, #0]  
+    STUR X9, [X1, #0]  
+
+
+binary_search:
+    ADD X9, XZR, XZR
+    ADD X10, XZR, XZR
+    ADD X11, XZR, XZR
+    SUBI SP, SP, #16
+    STUR X19, [SP, #8]
+    STUR LR, [SP, #0]
+    ADD X19, X0, XZR
+
+    SUBS XZR, X1, X2        //if end >= start
+    B.LE exit1              //continue
+    SUBI X0, XZR, #1        //else if end < start, set value of return register to -1 and return
+    LDUR LR, [SP, #0]
+    LDUR X19, [SP, #8]
+    ADDI SP, SP, #16
+    BR LR
+    exit1:
+   
+    ADD X9, X1, X2         //X9 = start + end
+    LSR X9, X9, #1         //index X9 = (start + end)/2
+   
+    LSL X10, X9, #3        //X10 = index offset
+    ADD X10, X0, X10       //X10 = index offset + address of a[]
+    LDUR X11, [X10, #0]    //X11 = a[index]
+   
+    SUBS XZR, X11, X3
+    B.NE exit2              //a[index] - value                          //if not equal continue
+    ADD X0, X9, XZR        //if equal, set value of return register to value of index
+    LDUR LR, [SP, #0]
+    LDUR X19, [SP, #8]
+    ADDI SP, SP, #16
+    BR LR                  //and then return
+    exit2:
+
+    SUBS XZR, X11, X3     
+    B.LE exit3             //if value >= a[index] continue
+    SUBI X2, X9, #1        //set thrid param to index-1 and call binary serach
+    BL binary_search        //if a[index] > value, return binary_search(a, start, index - 1, value);
+    LDUR LR, [SP, #0]
+    LDUR X19, [SP, #8]
+    ADDI SP, SP, #16
+    BR LR
+    exit3:
+   
+    ADDI X1, X9, #1
+    BL binary_search        //if continue, return binary_search(a, index + 1, end, value);
+    LDUR LR, [SP, #0]
+    LDUR X19, [SP, #8]
+    ADDI SP, SP, #16
+    BR LR
+
+
+cycle_sort:
+    ADD X9, XZR, XZR
+    ADD X10, XZR, XZR
+    ADD X11, XZR, XZR
+    ADD X12, XZR, XZR
+    ADD X13, XZR, XZR
+
+    SUBI SP, SP, #48
+    STUR X19, [SP, #0] //Save X19, cstart uses X19
+    STUR X20, [SP, #8] //Save X20, X0 uses X20
+    STUR X21, [SP, #16] //Save X21, X1 uses X21
+    STUR X22, [SP, #24]
+    STUR X23, [SP, #32]
+    STUR LR, [SP, #40]
+    ADD X19, XZR, XZR //cstart = 0
+    ADD X20, X0, XZR //copy parameters for X20, X21
+    ADD X21, X1, XZR //X21 = size of a[]
+    ADD X22, XZR, XZR //saved register for index
+    ADD X23, XZR, XZR //saved register for val
+    B top_of_cycle_sort
+loop_update:
+    ADDI X19, X19, #1 //cstart++
+    B top_of_cycle_sort
+top_of_cycle_sort:
+    SUBI X9, X21, #1 //X9 = n - 1
+    SUBS XZR, X9, X19 // set flag (n - 1) - cstart
+    B.LE end_of_cycle_sort //if cstart >= n - 1, branch to end_of_cycle_sort
+    LSL X11, X19, #3 //cstart * 8
+    ADD X11, X11, X20 //X11 = &a[cstart]
+    LDUR X23, [X11, #0] //X11 = a[cstart], val = X23
+    ADD X0, X20, XZR
+    ADD X1, X21, XZR
+    ADD X2, X19, XZR //set cstart parameter for find_index
+    ADD X3, X23, XZR //set val parameter for find_index
+    BL find_index
+    ADD X22, X0, XZR //X22 = updated index
+    SUB X10, X19, X22 //X10 = cstart - idx
+    CBZ X10, loop_update //if cstart != idx, continue (skip the current iteration)
+    ADD X0, X20, XZR //load param back to X0
+    ADD X1, X22, XZR //X1 = idx
+    ADD X2, X23, XZR //X2 = val
+    BL skip_duplicates
+    ADD X22, X0, XZR //set idx to return value of skip_d
+    //swap by hand
+    LSL X12, X22, #3 //X12 = idx*8
+    ADD X12, X20, X12 //X12 = &a[idx]
+    LDUR X13, [X12, #0] //X13 = a[idx]
+    STUR X23, [X12, #0] //Store a[idx] at X23
+    ADD X23, X13, XZR //X23 = a[idx]
+
+    ADD X0, X20, XZR
+    ADD X1, X21, XZR
+    ADD X2, X19, XZR //X2 = cstart
+    ADD X3, X22, XZR //X3 = idx
+    ADD X4, X23, XZR //X4 = val
+    BL complete_cycle
+    ADDI X19, X19, #1 //cstart++
+    B top_of_cycle_sort
+end_of_cycle_sort:
+    LDUR LR, [SP, #40]
+    LDUR X23, [SP, #32]
+    LDUR X22, [SP, #24]
+    LDUR X21, [SP, #16]
+    LDUR X20, [SP, #8]
+    LDUR X19, [SP, #0]
+    ADDI SP, SP, #48
+    BR LR
