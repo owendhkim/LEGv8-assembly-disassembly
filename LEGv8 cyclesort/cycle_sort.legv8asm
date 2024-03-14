@@ -1,5 +1,4 @@
 //Dongho Kim owenk@iastate.edu
-//Jimmy Le jimmyle@iastate.edu
 
 main:
     ADD X0, XZR, XZR
