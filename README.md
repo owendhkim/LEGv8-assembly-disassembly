@@ -4,15 +4,7 @@ Computer Architecture and Machine-Level Programming class project.
 
 Converted cyclesort algorithm in c to LEGv8 assembly language.
 
-Wrote functional disassembler in Java that can process binary files and write LEGv8 instructions.
-
-
-## Description
-
-● Converted cyclesort algorithm written in c to LEGv8 assembly language.
-
-● Wrote a disassembler that only uses bit-wise operations to process binary file into LEGv8 assembly language.
-
+Wrote functional disassembler in Java that processes binary file into LEGv8 instructions, using bit-wise operations only.
 
 ## Main takeaways
 
